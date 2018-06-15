@@ -7,24 +7,24 @@ var budget_controller=(function () {
         this. description=description;
         this.value=value;
 
-    }
+    };
     var Income=function (id,description,value) {
         this.id=id;
         this. description=description;
         this.value=value;
 
-    }
+    };
 // data structure**in budget controller***********************************************************************************
     var data={
         all_items:{
             exp:[],
-            inc:[],
+            inc:[]
         },
         totals:{
             exp:0,
             inc:0
         }
-    }
+    };
     return{
         add_item: function (type,description,value) {
             var id=0;
@@ -42,9 +42,9 @@ var budget_controller=(function () {
 
             // create a new item
             if (type==="exp"){
-                 new_item=new Expense(id,description,value);
+                new_item=new Expense(id,description,value);
             } else if (type==="inc"){
-                 new_item=new Income(id,description,value);
+                new_item=new Income(id,description,value);
             }
 
             //push the new item
@@ -70,7 +70,9 @@ var UI_controller=(function () {
         input_type:".add__type",
         input_description:".add__description",
         input_value:".add__value",
-        input_btn:".add__btn"
+        input_btn:".add__btn",
+        income_list:".income__list",
+        expense_list:".expenses__list"
     };
     return{
         get_input:function () {
@@ -81,6 +83,43 @@ var UI_controller=(function () {
                 value:document.querySelector(DOMStrings.input_value).value
             };
 
+        },
+        add_list_item: function (obj,type) {
+            var html,new_html,element;
+            //1- craete html text with placeholder- delete all spaces and make it a string
+            if (type==="inc") {
+                element=DOMStrings.income_list;
+                html = '<div class="item clearfix" id="income-%id%"><div class="item__description">%description%</div>' +
+                    '<div class="right clearfix"><div class="item__value">%value%</div><div class="item__delete">' +
+                    '<button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
+            } else if (type==="exp") {
+                element=DOMStrings.expense_list;
+                html = '<div class="item clearfix" id="expense-%id%"><div class="item__description">%description%</div>' +
+                    '<div class="right clearfix"><div class="item__value">%value%</div>' +
+                    '<div class="item__percentage">%percentage%</div><div class="item__delete">' +
+                    '<button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
+            }
+            //2- replace the text with actual data
+            new_html=html.replace("%id%",obj.id);
+            new_html=new_html.replace("%description%",obj.description);
+            new_html=new_html.replace("%value%",obj.value);
+
+            //3- insert html into DOM-we use befor to set the html as the last child of income and expense list
+
+            document.querySelector(element).insertAdjacentHTML('beforeend',new_html);
+
+        },
+        clear_fields:function () {
+            var fields,fields_arr;
+            fields=document.querySelectorAll(DOMStrings.input_description+','+DOMStrings.input_value);
+
+            //querySelectorAll returns a list which should be converted to array. fields.slice cant be used so the trick is:
+            fields_arr=Array.prototype.slice.call(fields) ;
+            fields_arr.forEach(function (current,index,array) {
+                current.value="";
+
+            });
+            fields_arr[0].focus();
         },
         // to pass the class to another controller module (btn)
         get_DOM_strings:function () {
@@ -108,7 +147,7 @@ var app_controller=(function (budgetCtrl,UICtrl) {
                 add_item();
             }
         })
-    }
+    };
     // custome function for getting data, ad data to budget controller, add the item in UI and..
     // by clicking the button or pressing the enter
     var add_item =function () {
@@ -118,15 +157,22 @@ var app_controller=(function (budgetCtrl,UICtrl) {
 
         //2- add data to the budget controller
         new_item=budgetCtrl.add_item(input.type,input.desc,input.value);
-        //3- add the item to the UI
+
+
+        //3- add the item to the UI and clear the fields
+        UICtrl.add_list_item(new_item,input.type);
+        UICtrl.clear_fields();
+
+
         //4- calculate the budjet
+
+
         //5- update the top part
 
-    }
+    };
     // public initialization function
     return{
         init:function () {
-            console.log("helllllllllllllllll");
             set_event_listener();
 
         }
